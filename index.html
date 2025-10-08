@@ -1,1 +1,183 @@
-tanpa iklan
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="ff8131f43495be2b2734f0f22919ba21422ff4e4" content="ff8131f43495be2b2734f0f22919ba21422ff4e4" />
+<meta name="description" content="Full Asupan DoodStream Local Terbaru">
+<meta name="keywords" content="Simontok, DoodStream, Vide">
+<meta name="author" content="DOODSTREAM PRO MILD">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<meta name="monetag" content="14092ddde984f4e01dfe6b12e548f23f">
+<title>DOODSTREAM PRO MILD</title>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  html, body {
+    height: 100%;
+    width: 100%;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  main {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .video-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    overflow: hidden;
+    background: #000;
+    box-shadow: none;
+    border: none;
+    position: relative;
+  }
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #000;
+    display: block;
+  }
+
+  /* Overlay tombol play custom */
+  .play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    background: rgba(0, 255, 0, 0.8);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 2;
+  }
+
+  .play-overlay:hover {
+    background: rgba(0, 255, 0, 1);
+  }
+
+  .play-overlay::before {
+    content: '';
+    border-style: solid;
+    border-width: 18px 0 18px 28px;
+    border-color: transparent transparent transparent #000;
+    margin-left: 5px;
+  }
+
+  /* Loading spinner */
+  .loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(0, 255, 0, 0.2);
+    border-top-color: #00ff00;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 1s linear infinite;
+    display: none;
+    z-index: 1;
+  }
+
+  @keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .d-none {
+    display: none;
+  }
+</style>
+
+</head>
+<body>
+
+<main>
+  <div class="video-container d-none" id="videoContainer">
+    <div class="loading-spinner" id="loadingSpinner"></div>
+    <div class="play-overlay" id="playOverlay"></div>
+    <video 
+      id="videoPlayer" 
+      controls 
+      controlsList="nodownload noremoteplayback" 
+      disablePictureInPicture>
+      <source id="videoSource" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+</main>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const videoId = urlParams.get('v');
+
+  if (videoId) {
+    fetch('https://doodsspro.my.id/Video.json')
+      .then(response => response.json())
+      .then(data => {
+        const videoData = data.find(video => video.id === videoId);
+
+        if (videoData) {
+          const videoContainer = document.getElementById('videoContainer');
+          const videoPlayer = document.getElementById('videoPlayer');
+          const videoSource = document.getElementById('videoSource');
+          const playOverlay = document.getElementById('playOverlay');
+          const loadingSpinner = document.getElementById('loadingSpinner');
+
+          videoSource.src = videoData.Url;
+          videoContainer.classList.remove('d-none');
+          videoPlayer.load();
+
+          // Tampilkan tombol play di awal
+          playOverlay.style.display = 'flex';
+
+          playOverlay.addEventListener('click', () => {
+            playOverlay.style.display = 'none';
+            loadingSpinner.style.display = 'block';
+            videoPlayer.play();
+          });
+
+          // Saat video mulai main, sembunyikan spinner
+          videoPlayer.addEventListener('playing', () => {
+            loadingSpinner.style.display = 'none';
+          });
+
+          // Saat video pause, tampilkan tombol play lagi
+          videoPlayer.addEventListener('pause', () => {
+            playOverlay.style.display = 'flex';
+          });
+        } else {
+          alert('Video tidak ditemukan');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching JSON:', error);
+        alert('Gagal memuat data video');
+      });
+  } else {
+    alert('Parameter video (v) tidak ditemukan');
+  }
+
+  const videoPlayer = document.getElementById('videoPlayer');
+  videoPlayer.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+
+</body>
+</html>
