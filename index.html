@@ -1,79 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pemutar Video</title>
-
-  <!-- Monetag popunder -->
-  <script>
-    (function (s) {
-      s.dataset.zone = "9682172";
-      s.src = "https://al5sm.com/tag.min.js";
-    })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement("script")));
-  </script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Player</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * {
+    html, body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    html, body {
-      width: 100%;
       height: 100%;
-      background-color: #000;
+      background-color: black;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
     #video-container {
+      position: relative;
       width: 100%;
       height: 100%;
-      position: relative;
-      background-color: #000;
+      background: black;
       overflow: hidden;
     }
-
     #video-player {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      background-color: #000;
-      display: block;
+      background: black;
     }
-
     .loading-spinner {
       border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid #00ff00;
+      border-top: 4px solid white;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       animation: spin 1s linear infinite;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 10;
+      z-index: 20;
       display: none;
     }
-
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
     #error-message {
-      color: red;
       position: absolute;
-      bottom: 20px;
-      width: 100%;
+      color: white;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      font-family: sans-serif;
       display: none;
     }
   </style>
@@ -81,37 +61,34 @@
 <body>
   <div id="video-container">
     <div class="loading-spinner" id="loading-spinner"></div>
-    <video
-      id="video-player"
-      controls
-      preload="metadata"
+    <video id="video-player" controls preload="metadata"
       controlsList="nodownload noremoteplayback"
       disablePictureInPicture>
       Browser tidak mendukung video.
     </video>
-    <div id="error-message">Gagal memuat video.</div>
+    <div id="error-message"></div>
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
-      let urlPath = window.location.pathname;
-      let videoId = "";
+      let path = window.location.pathname;
+      let videoId = path.startsWith("/") ? path.slice(1) : path;
 
-      if (urlPath.startsWith("/")) urlPath = urlPath.substring(1);
-      if (urlPath.startsWith("e/")) videoId = urlPath.substring(2);
-      else videoId = urlPath;
+      if (videoId.startsWith("e/")) {
+        videoId = videoId.slice(2);
+      }
 
-      const videoPlayer = document.getElementById("video-player");
-      const loadingSpinner = document.getElementById("loading-spinner");
-      const errorMessage = document.getElementById("error-message");
+      const video = document.getElementById("video-player");
+      const spinner = document.getElementById("loading-spinner");
+      const error = document.getElementById("error-message");
 
       if (!videoId) {
-        errorMessage.textContent = "ID video tidak ditemukan di URL.";
-        errorMessage.style.display = "block";
+        error.textContent = "ID video tidak ditemukan di URL.";
+        error.style.display = "block";
         return;
       }
 
-      loadingSpinner.style.display = "block";
+      spinner.style.display = "block";
 
       try {
         const response = await axios.get(
@@ -119,27 +96,27 @@
           { timeout: 10000 }
         );
         const videos = response.data;
-        const foundVideo = videos.find((video) => video.id === videoId);
+        const found = videos.find(v => v.id === videoId);
 
-        if (foundVideo) {
-          videoPlayer.src = foundVideo.Url;
-          videoPlayer.addEventListener("error", () => {
-            errorMessage.textContent = "Error memutar video.";
-            errorMessage.style.display = "block";
+        if (found) {
+          video.src = found.Url;
+          video.addEventListener("error", () => {
+            error.textContent = "Gagal memutar video. Periksa koneksi atau format.";
+            error.style.display = "block";
           });
         } else {
-          errorMessage.textContent = "Video dengan ID ini tidak ditemukan.";
-          errorMessage.style.display = "block";
+          error.textContent = `Video dengan ID ${videoId} tidak ditemukan.`;
+          error.style.display = "block";
         }
-      } catch (error) {
-        errorMessage.textContent = "Error mengambil data video.";
-        errorMessage.style.display = "block";
+      } catch (e) {
+        error.textContent = "Gagal mengambil data video.";
+        error.style.display = "block";
       } finally {
-        loadingSpinner.style.display = "none";
+        spinner.style.display = "none";
       }
 
-      // Nonaktifkan klik kanan pada video
-      videoPlayer.addEventListener("contextmenu", (e) => e.preventDefault());
+      // Disable klik kanan
+      video.addEventListener("contextmenu", e => e.preventDefault());
     });
   </script>
 </body>
